@@ -36,8 +36,7 @@ Rules:
 
 
 if __name__ == "__main__":
-    first_experience =     "Implemented an A*-based path-planning algorithm in C++ to compute obstacle-aware routes from grid maps, supporting dynamic goal updates     Designed and integrated a modular planning node with real-time data subscriptions, state handling, and periodic replanning within a robotics software stack     Learned C sharp  and ROS2 fundamentals in one week to support hardware-level programming and testing     Documented development hurdles and solutions while iteratively improving system reliability."
-
+    first_experience = " Put the experience here."
 
 
     bullets = generate_resume_bullets(first_experience)
