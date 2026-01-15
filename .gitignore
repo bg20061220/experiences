@@ -15,3 +15,7 @@ env/
 
 # logs 
 *.log 
+
+# Experinces data 
+Projects/
+Roles/
