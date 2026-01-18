@@ -17,5 +17,10 @@ env/
 *.log 
 
 # Experinces data 
-Projects/
-Roles/
+data/ 
+
+# Frontend build
+frontend/build/
+frontend/node_modules/
+#backend 
+backend/__pycache__/

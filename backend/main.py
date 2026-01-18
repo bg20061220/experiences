@@ -6,7 +6,7 @@ import psycopg2
 from sentence_transformers import SentenceTransformer
 from pgvector.psycopg2 import register_vector
 import requests 
-
+import os 
 app = FastAPI(title = "Resume Tailor API")
 
 app.add_middleware(
@@ -19,15 +19,10 @@ app.add_middleware(
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 def get_db():
-    conn = psycopg2.connect(
-        host="localhost",
-        database="resume_tailor",
-        user="postgres",
-        password="postgres"
-    )
+    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/resume_tailor")
+    conn = psycopg2.connect(db_url)
     register_vector(conn)
-    return conn
-
+    return conn 
 class SearchRequest(BaseModel):
     query : str 
     limit : int = 5 
@@ -171,9 +166,11 @@ Generate bullet points that:
 - Are specific and results-oriented
 
 Return ONLY the bullet points, one per line starting with •"""
+    
+    ollama_host = os.getenv("OLLAMA_HOST" , "http://localhost:11434")
     try :
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            f"{ollama_host}/api/generate",
             json = {
                 "model" : "llama3.2",
                 "prompt" : prompt,

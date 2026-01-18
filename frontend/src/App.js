@@ -7,6 +7,8 @@ function App() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [bullets, setBullets] = useState([]);
   const [loading, setLoading] = useState(false);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 
   const searchProjects = async () => {
     setLoading(true);
@@ -14,7 +16,8 @@ function App() {
     setSelectedProject(null);
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/search-projects', {
+      const response = await fetch(`${API_URL}/api/search-projects`
+, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -36,7 +39,8 @@ function App() {
     setSelectedProject(projectId);
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/generate', {
+      const response = await fetch(`${API_URL}/api/generate`
+, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

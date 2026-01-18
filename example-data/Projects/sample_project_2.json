@@ -1,0 +1,20 @@
+{
+  "id": "proj_task_manager",
+  "type": "project",
+  "title": "Collaborative Task Management App",
+  "date_range": "2023-11",
+  "skills": [
+    "Vue.js", "Firebase", "JavaScript", "Real-time Database",
+    "Authentication", "Cloud Functions", "UI/UX Design"
+  ],
+  "industry": [
+    "Productivity Tools",
+    "Web Development",
+    "Team Collaboration"
+  ],
+  "tags": [
+    "web app", "Firebase", "Vue.js", "real-time",
+    "collaboration", "personal project"
+  ],
+  "content": "Developed a real-time collaborative task management application using Vue.js and Firebase. Implemented user authentication with Google Sign-In and email/password using Firebase Auth. Built real-time task synchronization across multiple users using Firestore database with live updates. Created custom Cloud Functions for sending email notifications when tasks are assigned or completed. Designed an intuitive drag-and-drop interface for task organization using Vue Draggable. Implemented role-based access control with admin, member, and viewer permissions. Added task filtering, search functionality, and custom tags for better organization. Deployed the application on Firebase Hosting with automatic SSL certificate. Application supports 50+ concurrent users with sub-second data synchronization."
+}

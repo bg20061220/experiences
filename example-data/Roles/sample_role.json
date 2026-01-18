@@ -1,0 +1,20 @@
+{
+  "id": "role_data_analyst_intern",
+  "type": "role",
+  "title": "Data Analyst Intern - DataCorp Inc.",
+  "date_range": "2023-06 to 2023-12",
+  "skills": [
+    "Python", "Pandas", "SQL", "Data Visualization",
+    "Tableau", "Excel", "Statistical Analysis", "ETL"
+  ],
+  "industry": [
+    "Data Analytics",
+    "Business Intelligence",
+    "Technology Consulting"
+  ],
+  "tags": [
+    "internship", "data analysis", "Python", "SQL",
+    "visualization", "professional experience"
+  ],
+  "content": "Worked as a data analyst intern at DataCorp Inc., a business intelligence consulting firm serving Fortune 500 clients. Analyzed customer behavior data from multiple sources using Python and Pandas, processing over 2 million records. Wrote complex SQL queries to extract and transform data from PostgreSQL databases for reporting purposes. Created interactive dashboards in Tableau to visualize sales trends and customer segmentation insights for executive presentations. Automated weekly reporting processes using Python scripts, reducing manual work by 15 hours per week. Collaborated with senior analysts to identify data quality issues and implemented validation checks. Presented findings to stakeholders in bi-weekly meetings and contributed to 5 client deliverables. Gained hands-on experience with ETL pipelines and data warehousing concepts."
+}

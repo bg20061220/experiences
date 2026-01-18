@@ -1,0 +1,20 @@
+{
+  "id": "proj_portfolio_website",
+  "type": "project",
+  "title": "Personal Portfolio Website",
+  "date_range": "2024-06",
+  "skills": [
+    "React", "Node.js", "MongoDB", "REST API",
+    "Responsive Design", "Git", "Deployment"
+  ],
+  "industry": [
+    "Web Development",
+    "Personal Branding",
+    "Full-Stack Development"
+  ],
+  "tags": [
+    "full-stack", "web app", "personal project",
+    "React", "Node.js"
+  ],
+  "content": "Built a responsive personal portfolio website using React for the frontend and Node.js with Express for the backend. Implemented a contact form with email integration using Nodemailer. Created a MongoDB database to store project information and blog posts. Designed and developed a custom CMS interface for easy content updates. Deployed the application on Heroku with automated CI/CD pipeline. Achieved 95+ PageSpeed score through image optimization and code splitting. Integrated Google Analytics to track visitor engagement and page performance."
+}
