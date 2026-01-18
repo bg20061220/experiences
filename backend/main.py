@@ -44,7 +44,9 @@ class ProjectData(BaseModel):
 
 class GenerateRequest(BaseModel):
     job_description : str 
-    num_bullets : int = 1
+    num_bullets : int = 3
+    project_id : Optional[str] = None 
+
 
 @app.get("/")
 def root():
@@ -80,61 +82,118 @@ def add_project(project : ProjectData):
         cur.close()
         conn.close()
 
+
+@app.post("/api/search-projects")
+def search_projects_only(request: SearchRequest):
+    query_embedding = embedder.encode(request.query).tolist()
+    
+    conn = get_db()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT id, type, title, date_range, content,
+               1 - (embedding <=> %s::vector) as similarity
+        FROM projects
+        ORDER BY embedding <=> %s::vector
+        LIMIT %s
+    """, (query_embedding, query_embedding, request.limit))
+    
+    results = []
+    for row in cur.fetchall():
+        results.append({
+            "id": row[0],
+            "type": row[1],
+            "title": row[2],
+            "date_range": row[3],
+            "content": row[4],
+            "similarity": row[5]
+        })
+    
+    cur.close()
+    conn.close()
+    
+    return {"results": results}
 @app.post("/api/generate")
 def generate_bullets(request : GenerateRequest):
-    query_embedding = embedder.encode(request.job_description).tolist()
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(""" 
-     SELECT title, content , skills, 
-                     1 - (embedding <=> %s::vector) as similarity
-     FROM projects
-     ORDER BY embedding <=> %s::vector
-     LIMIT 3
-    """ , (query_embedding , query_embedding))
+    if request.project_id:
+        cur.execute("""
+            SELECT title , content , skills 
+            FROM projects 
+            WHERE id = %s     
+                 """ , (request.project_id,)) 
 
-    relevant = cur.fetchall()
+        row = cur.fetchone()
+        if not row : 
+            raise HTTPException(status_code = 404 , detail = "Project Not found")
+
+        context = f"Project: {row[0]}\nContent: {row[1]}\nSkills: {', '.join(row[2])}"
+    
+    else : 
+        query_embedding = embedder.encode(request.job_description).tolist()
+
+        cur.execute("""
+                SELECT title , content , skills , 1 - (embedding <=> %s::vector) as similarity
+                FROM projects
+                ORDER BY embedding <=> %s::vector 
+                LIMIT 3
+                 """ , (query_embedding , query_embedding))
+        
+        relevant = cur.fetchall()
+
+        if not relevant: 
+            cur.close()
+            conn.close()
+            return {"bullets" : [] , "message" : "No relevant projects found"}
+        
+        context = "\n\n".join([
+            f"Project: {row[0]}\nContent: {row[1]}\nSkills: {', '.join(row[2])}\nRelevance: {row[3]:.0%}"
+            for row in relevant
+        ])
+
     cur.close()
     conn.close()
 
-    if not relevant : 
-        return {"bullets " : [] , "message" : "No relevant projects found"}
-    context = "\n\n".join([
-        f"Project: {row[0]}\nContent: {row[1]}\nSkills: {', '.join(row[2])}\nRelevance: {row[3]:.0%}"
-        for row in relevant
-    ])
-    prompt = f"""You are a professional resume writer. Create {request.num_bullets} compelling resume bullet points based on this job description and the candidate's experience.
-    JOB DESCRIPTION  : {request.job_description}
-    Candidate's Experience : {context}
+    prompt = f"""You are a professional resume writer. Create {request.num_bullets} compelling resume bullet points based STRICTLY on the candidate's experience provided below. DO NOT invent or add any information not present in the experience.
 
-    Generate bullet points that : 
-    - Start with strong action verbs 
-    - Quantify achievements where possible
-    - Highlight relevant skills from the job description
-    - Are specifc and result-oriented
+JOB DESCRIPTION: {request.job_description}
 
-    Return ONLY the bullet points, one per line starting with • """
+Candidate's ACTUAL Experience:
+{context}
 
-    try : 
+Generate bullet points that:
+- Start with strong action verbs
+- Use ONLY information from the candidate's experience above
+- Quantify achievements where possible but not necessary if none are available dont add them.
+- Highlight relevant skills from the job description
+- Are specific and results-oriented
+
+Return ONLY the bullet points, one per line starting with •"""
+    try :
         response = requests.post(
             "http://localhost:11434/api/generate",
-            json = {"model" : "llama3.2" , "prompt" : prompt , "stream" :False},
-            timeout = 240
+            json = {
+                "model" : "llama3.2",
+                "prompt" : prompt,
+                "stream" : False , 
+                "options" : {"temperature" : 0.3}
+            }, 
+            timeout = 180
         )
         llm_output = response.json()['response']
 
-        # Parsing Bullets 
         bullets = [
             line.strip().lstrip('•').lstrip('-').strip()
             for line in llm_output.split('\n')
             if line.strip() and (line.strip().startswith('•') or line.strip().startswith('-'))
         ]
-        
-        return {"bullets": bullets[:request.num_bullets]}
-    
-    except Exception as e :
+
+        return {"bullets" : bullets[:request.num_bullets]}
+    except Exception as e : 
         raise HTTPException(status_code = 500 , detail = f"LLM error : {str(e)}")
+      
 
 @app.delete("/api/projects/{project_id}")
 def delete_project(project_id : str):
@@ -214,6 +273,7 @@ def get_all_projects():
 @app.get("/health") 
 def health():
     return {"status" : "healthy"}
+
 
 
 
