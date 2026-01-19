@@ -44,7 +44,7 @@ chmod +x setup.sh
 ## Manual Setup (if setup.sh doesn't work)
 ```bash
 # Start containers
-docker-compose up -d
+docker-compose up -d --build
 
 # Wait 10 seconds for DB to start
 sleep 10
