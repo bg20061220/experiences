@@ -10,7 +10,7 @@ Automatically tailor your resume to any job description using vector search and 
 - 🔒 100% local - your data never leaves your machine
 
 ## Prerequisites
-- Docker & Docker Compose
+- Docker Desktop ( Download link https://www.docker.com/products/docker-desktop/) 
 - (Optional) NVIDIA GPU for faster LLM inference
 
 ## Quick Start
