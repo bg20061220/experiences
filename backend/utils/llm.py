@@ -49,9 +49,17 @@ def call_llm(prompt: str, model: str = "llama-3.1-8b-instant", temperature: floa
 
 def parse_bullets(llm_output: str, max_bullets: int) -> list:
     """Parse bullet points from LLM output."""
+    # First try to find lines starting with bullet markers
     bullets = [
-        line.strip().lstrip('•').lstrip('-').strip()
+        line.strip().lstrip('•').lstrip('-').lstrip('*').strip()
         for line in llm_output.split('\n')
-        if line.strip() and (line.strip().startswith('•') or line.strip().startswith('-'))
+        if line.strip() and (line.strip().startswith('•') or line.strip().startswith('-') or line.strip().startswith('*'))
     ]
+
+    # If no bullets found, use the entire output as a single bullet
+    if not bullets:
+        cleaned = llm_output.strip()
+        if cleaned:
+            bullets = [cleaned]
+
     return bullets[:max_bullets]

@@ -11,7 +11,7 @@ function MainApp() {
   const [jobDescription, setJobDescription] = useState('');
   const [matchedExperiences, setMatchedExperiences] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [bullets, setBullets] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [generateLoading, setGenerateLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -50,19 +50,9 @@ function MainApp() {
     }
   };
 
-  // Get similarity label and class
-  const getSimilarityInfo = (similarity) => {
-    if (similarity >= 0.75) {
-      return { label: 'Strong Match', className: 'match-strong' };
-    } else if (similarity >= 0.5) {
-      return { label: 'Good Match', className: 'match-good' };
-    }
-    return { label: 'Weak Match', className: 'match-weak' };
-  };
-
   const searchExperiences = async () => {
     setSearchLoading(true);
-    setBullets([]);
+    setProjects([]);
     setSelectedIds(new Set());
 
     try {
@@ -77,11 +67,8 @@ function MainApp() {
       const results = data.results || [];
       setMatchedExperiences(results);
 
-      // Auto-select strong matches (>= 0.75)
-      const strongMatches = results
-        .filter(exp => exp.similarity >= 0.75)
-        .map(exp => exp.id);
-      setSelectedIds(new Set(strongMatches));
+      // Auto-select all top matches
+      setSelectedIds(new Set(results.map(exp => exp.id)));
 
       if (data.message) {
         alert(data.message);
@@ -126,8 +113,7 @@ function MainApp() {
         method: 'POST',
         body: JSON.stringify({
           job_description: jobDescription,
-          experience_ids: Array.from(selectedIds),
-          num_bullets: Math.min(selectedIds.size * 2, 6)
+          experience_ids: Array.from(selectedIds)
         })
       });
 
@@ -137,7 +123,7 @@ function MainApp() {
       }
 
       const data = await response.json();
-      setBullets(data.bullets || []);
+      setProjects(data.projects || []);
     } catch (error) {
       console.error('Error:', error);
       alert(error.message || 'Failed to generate bullets');
@@ -157,7 +143,10 @@ function MainApp() {
 
   const copyAllBullets = async () => {
     try {
-      await navigator.clipboard.writeText(bullets.map(b => `• ${b}`).join('\n'));
+      const text = projects.map(p =>
+        `${p.project}\n${p.bullets.map(b => `• ${b}`).join('\n')}`
+      ).join('\n\n');
+      await navigator.clipboard.writeText(text);
       setCopiedIndex('all');
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch (err) {
@@ -224,12 +213,10 @@ function MainApp() {
                 </div>
                 <p className="matches-hint">
                   {selectedIds.size} of {matchedExperiences.length} selected.
-                  Strong matches are pre-selected.
                 </p>
 
                 <div className="matches-list">
                   {matchedExperiences.map((exp) => {
-                    const { label, className } = getSimilarityInfo(exp.similarity);
                     const isSelected = selectedIds.has(exp.id);
 
                     return (
@@ -245,9 +232,6 @@ function MainApp() {
                         <div className="match-content">
                           <div className="match-header">
                             <h3>{exp.title}</h3>
-                            <span className={`match-badge ${className}`}>
-                              {label} ({(exp.similarity * 100).toFixed(0)}%)
-                            </span>
                           </div>
                           <p className="match-meta">
                             {exp.type} {exp.date_range && `• ${exp.date_range}`}
@@ -281,7 +265,7 @@ function MainApp() {
               </div>
             )}
 
-            {bullets.length > 0 && (
+            {projects.length > 0 && (
               <div className="results-section">
                 <div className="results-header">
                   <h2>Step 3: Your Tailored Bullets</h2>
@@ -289,20 +273,28 @@ function MainApp() {
                     {copiedIndex === 'all' ? 'Copied!' : 'Copy All'}
                   </button>
                 </div>
-                <ul className="bullets-list">
-                  {bullets.map((bullet, i) => (
-                    <li key={i} className="bullet-item">
-                      <span className="bullet-text">{bullet}</span>
-                      <button
-                        onClick={() => copyBullet(bullet, i)}
-                        className="copy-btn"
-                        title="Copy to clipboard"
-                      >
-                        {copiedIndex === i ? 'Copied!' : 'Copy'}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {projects.map((project, pIndex) => (
+                  <div key={pIndex} className="project-bullets">
+                    <h3 className="project-title">{project.project}</h3>
+                    <ul className="bullets-list">
+                      {project.bullets.map((bullet, bIndex) => {
+                        const key = `${pIndex}-${bIndex}`;
+                        return (
+                          <li key={key} className="bullet-item">
+                            <span className="bullet-text">{bullet}</span>
+                            <button
+                              onClick={() => copyBullet(bullet, key)}
+                              className="copy-btn"
+                              title="Copy to clipboard"
+                            >
+                              {copiedIndex === key ? 'Copied!' : 'Copy'}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
               </div>
             )}
           </>

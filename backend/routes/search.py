@@ -6,7 +6,7 @@ from dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["search"])
 
-SIMILARITY_THRESHOLD = 0.5
+SIMILARITY_THRESHOLD = 0
 
 
 @router.post("/search")
@@ -14,20 +14,18 @@ def search_experiences(
     request: SearchRequest,
     user_id: str = Depends(get_current_user),
 ):
-    query_embedding = get_embedding(request.query)
+    query_embedding = get_embedding(request.query, input_type="search_query")
 
     conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT id, type, title, date_range, content, skills,
-               1 - (embedding <=> %s::vector) as similarity
+        SELECT id, type, title, date_range, content, skills
         FROM experiences
         WHERE user_id = %s
-          AND 1 - (embedding <=> %s::vector) >= %s
         ORDER BY embedding <=> %s::vector
-        LIMIT %s
-    """, (query_embedding, user_id, query_embedding, SIMILARITY_THRESHOLD, query_embedding, request.limit))
+        LIMIT 3
+    """, (user_id, query_embedding))
 
     results = []
     for row in cur.fetchall():
@@ -37,8 +35,7 @@ def search_experiences(
             "title": row[2],
             "date_range": row[3],
             "content": row[4],
-            "skills": row[5],
-            "similarity": row[6]
+            "skills": row[5]
         })
 
     cur.close()

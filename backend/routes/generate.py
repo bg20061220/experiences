@@ -31,36 +31,40 @@ def generate_bullets(
 
     rows = cur.fetchall()
 
-    if not rows:
-        cur.close()
-        conn.close()
-        raise HTTPException(status_code=404, detail="No experiences found")
-
-    context = "\n\n".join([
-        f"Project: {row[0]}\nContent: {row[1]}\nSkills: {', '.join(row[2] or [])}"
-        for row in rows
-    ])
-
     cur.close()
     conn.close()
 
-    prompt = f"""You are a professional resume writer. Create {request.num_bullets} compelling resume bullet points based STRICTLY on the candidate's experience provided below. DO NOT invent or add any information not present in the experience.
+    if not rows:
+        raise HTTPException(status_code=404, detail="No experiences found")
+
+    # Generate bullets for each project separately
+    projects = []
+    for row in rows:
+        project_name = row[0]
+        project_context = f"Project: {row[0]}\nContent: {row[1]}\nSkills: {', '.join(row[2] or [])}"
+
+        prompt = f"""You are a professional resume writer. Create 3 compelling resume bullet points based STRICTLY on the candidate's experience provided below. DO NOT invent or add any information not present in the experience.
 
 JOB DESCRIPTION: {request.job_description}
 
 Candidate's ACTUAL Experience:
-{context}
+{project_context}
 
-Generate bullet points that:
+Generate 3 bullet points that:
 - Start with strong action verbs
 - Use ONLY information from the candidate's experience above
 - Quantify achievements where possible but not necessary if none are available dont add them.
 - Highlight relevant skills from the job description
 - Are specific and results-oriented
 
-Return ONLY the bullet points, one per line starting with •"""
+Return ONLY the 3 bullet points, one per line, each starting with •"""
 
-    llm_output = call_llm(prompt)
-    bullets = parse_bullets(llm_output, request.num_bullets)
+        llm_output = call_llm(prompt)
+        bullets = parse_bullets(llm_output, 3)
 
-    return {"bullets": bullets}
+        projects.append({
+            "project": project_name,
+            "bullets": bullets
+        })
+
+    return {"projects": projects}
