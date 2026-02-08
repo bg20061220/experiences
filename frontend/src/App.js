@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ExperienceManager } from './components/ExperienceManager';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const ServerStatusContext = createContext({ serverReady: true });
 const useServerStatus = () => useContext(ServerStatusContext);

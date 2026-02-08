@@ -25,7 +25,13 @@ export function Auth() {
         setMessage('Check your email for a confirmation link!');
       }
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || '';
+      const secondsMatch = msg.match(/(\d+)\s*second/i);
+      if (secondsMatch) {
+        setError(`We're on a free plan with limited auth requests. Please wait ${secondsMatch[1]} seconds before trying again.`);
+      } else {
+        setError(msg);
+      }
     }
 
     setLoading(false);
