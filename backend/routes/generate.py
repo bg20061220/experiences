@@ -56,6 +56,7 @@ Generate 3 bullet points that:
 - Quantify achievements where possible but not necessary if none are available dont add them.
 - Highlight relevant skills from the job description
 - Are specific and results-oriented
+- Are ATS-friendly: use standard job-related keywords from the job description, avoid graphics/symbols/columns, and use clear straightforward language that applicant tracking systems can parse
 
 Return ONLY the 3 bullet points, one per line, each starting with •"""
 

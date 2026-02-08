@@ -192,7 +192,7 @@ function MainApp() {
     <div className="App">
       <header className="App-header">
         <h1>Resume Tailor</h1>
-        <p>AI-powered resume customization</p>
+        <p>Add your work experience, projects, and volunteering in Manage Experiences and then paste a job description to get your top 3 most relevant matches with ATS-friendly bullets.</p>
         <div className="user-info">
           <span>{user?.email}</span>
           <button onClick={handleSignOut} className="sign-out-btn">

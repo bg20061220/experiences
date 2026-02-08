@@ -38,59 +38,84 @@ export function Auth() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h1>Resume Tailor</h1>
-        <h2>{isLogin ? 'Sign In' : 'Create Account'}</h2>
+    <div className="hero-container">
+      <div className="hero-top">
+        <div className="hero-left">
+          <div className="hero-badge">AI-Powered Resume Tool</div>
+          <h1 className="hero-title">
+            Tailor your resume to <span className="hero-highlight">any job</span> in seconds
+          </h1>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
+        <div className="hero-right">
+          <div className="hero-feature-card">
+            <h3>Import from LinkedIn</h3>
+            <p>Paste your LinkedIn experience, projects, and volunteering sections. Our AI parses them into structured entries automatically with no manual typing needed.</p>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              minLength={6}
-              required
-            />
+          <div className="hero-feature-card">
+            <h3>AI-Matched Experiences</h3>
+            <p>Paste any job description and our AI finds your most relevant experiences using semantic search, ranking them by how well they match the role.</p>
           </div>
+          <div className="hero-feature-card">
+            <h3>ATS-Friendly Bullet Generation</h3>
+            <p>Generate tailored, ATS-optimized resume bullet points with strong action verbs, relevant keywords, and quantified results — ready to pass applicant tracking systems and impress recruiters.</p>
+          </div>
+        </div>
+      </div>
 
-          {error && <div className="error-message">{error}</div>}
-          {message && <div className="success-message">{message}</div>}
+      <div className="hero-bottom">
+        <div className="auth-box">
+          <h2>{isLogin ? 'Sign In' : 'Create Account'}</h2>
 
-          <button type="submit" disabled={loading}>
-            {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-        <p className="auth-toggle">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError('');
-              setMessage('');
-            }}
-          >
-            {isLogin ? 'Sign Up' : 'Sign In'}
-          </button>
-        </p>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                minLength={6}
+                required
+              />
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+            {message && <div className="success-message">{message}</div>}
+
+            <button type="submit" disabled={loading}>
+              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="auth-toggle">
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+                setMessage('');
+              }}
+            >
+              {isLogin ? 'Sign Up' : 'Sign In'}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
