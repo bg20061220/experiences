@@ -1,10 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ExperienceManager } from './components/ExperienceManager';
 
 const API_URL = 'http://localhost:8000';
+
+const ServerStatusContext = createContext({ serverReady: true });
+const useServerStatus = () => useContext(ServerStatusContext);
+
+function ServerWarmup({ children }) {
+  const [serverReady, setServerReady] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/health`)
+      .then((res) => {
+        if (res.ok) setServerReady(true);
+      })
+      .catch(() => {
+        // Retry after a delay if the first attempt fails
+        const retry = setInterval(() => {
+          fetch(`${API_URL}/health`)
+            .then((res) => {
+              if (res.ok) {
+                setServerReady(true);
+                clearInterval(retry);
+              }
+            })
+            .catch(() => {});
+        }, 3000);
+        return () => clearInterval(retry);
+      });
+  }, []);
+
+  return (
+    <ServerStatusContext.Provider value={{ serverReady }}>
+      {children}
+    </ServerStatusContext.Provider>
+  );
+}
 
 function MainApp() {
   const [activeTab, setActiveTab] = useState('generate');
@@ -306,13 +340,32 @@ function MainApp() {
   );
 }
 
+function ServerGate({ children }) {
+  const { serverReady } = useServerStatus();
+
+  if (!serverReady) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Our server is waking up, this will take 15-20 seconds...</p>
+      </div>
+    );
+  }
+
+  return children;
+}
+
 function App() {
   return (
-    <AuthProvider>
-      <ProtectedRoute>
-        <MainApp />
-      </ProtectedRoute>
-    </AuthProvider>
+    <ServerWarmup>
+      <AuthProvider>
+        <ProtectedRoute>
+          <ServerGate>
+            <MainApp />
+          </ServerGate>
+        </ProtectedRoute>
+      </AuthProvider>
+    </ServerWarmup>
   );
 }
 
