@@ -27,9 +27,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://resumetailorai.vercel.app",
+        "https://tailorcv.vercel.app",
     ],
-    allow_origin_regex=r"https://resumetailorai-[a-z0-9]+-bhavya-goels-projects\.vercel\.app",
+    allow_origin_regex=r"https://tailorcv-[a-z0-9]+-bhavya-goels-projects\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "HEAD"],
     allow_headers=["Content-Type", "Authorization"],
