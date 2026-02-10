@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -51,6 +51,19 @@ function MainApp() {
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   const { user, signOut, getAccessToken } = useAuth();
+  const { serverReady } = useServerStatus();
+  const [awaitingServer, setAwaitingServer] = useState(false);
+  const pendingActionRef = useRef(null);
+
+  // Auto-execute pending action when server becomes ready
+  useEffect(() => {
+    if (serverReady && pendingActionRef.current) {
+      const action = pendingActionRef.current;
+      pendingActionRef.current = null;
+      setAwaitingServer(false);
+      action();
+    }
+  }, [serverReady]);
 
   // Helper to make authenticated API calls
   const authFetch = async (url, options = {}) => {
@@ -73,6 +86,10 @@ function MainApp() {
       throw new Error('Session expired. Please sign in again.');
     }
 
+    if (response.status === 429) {
+      throw new Error('Too many requests. Please wait a moment and try again.');
+    }
+
     return response;
   };
 
@@ -85,6 +102,11 @@ function MainApp() {
   };
 
   const searchExperiences = async () => {
+    if (!serverReady) {
+      setAwaitingServer(true);
+      pendingActionRef.current = () => searchExperiences();
+      return;
+    }
     setSearchLoading(true);
     setProjects([]);
     setSelectedIds(new Set());
@@ -140,6 +162,12 @@ function MainApp() {
       return;
     }
 
+    if (!serverReady) {
+      setAwaitingServer(true);
+      pendingActionRef.current = () => generateBullets();
+      return;
+    }
+
     setGenerateLoading(true);
 
     try {
@@ -190,49 +218,67 @@ function MainApp() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Resume Tailor</h1>
-        <p>Add your work experience, projects, and volunteering in Manage Experiences and then paste a job description to get your top 3 most relevant matches with ATS-friendly bullets.</p>
-        <div className="user-info">
-          <span>{user?.email}</span>
-          <button onClick={handleSignOut} className="sign-out-btn">
-            Sign Out
-          </button>
-        </div>
-      </header>
+      <nav className="top-bar">
+        <span className="logo">TailorCV</span>
+        <button onClick={handleSignOut} className="sign-out-btn">
+          Sign Out
+        </button>
+      </nav>
 
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'generate' ? 'active' : ''}`}
-          onClick={() => setActiveTab('generate')}
+          onClick={() => { setActiveTab('generate'); setAwaitingServer(false); pendingActionRef.current = null; }}
         >
           Generate Bullets
         </button>
         <button
           className={`tab ${activeTab === 'manage' ? 'active' : ''}`}
-          onClick={() => setActiveTab('manage')}
+          onClick={() => { setActiveTab('manage'); setAwaitingServer(false); pendingActionRef.current = null; }}
         >
           Manage Experiences
         </button>
       </div>
 
       <div className="container">
-        {activeTab === 'generate' ? (
+        {(awaitingServer || (activeTab === 'manage' && !serverReady)) ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Our server is waking up, this will take 15-20 seconds...</p>
+          </div>
+        ) : activeTab === 'manage' ? (
+          <div className="manage-layout">
+            <aside className="manage-sidebar">
+              <h2 className="manage-title">Build your <span className="manage-highlight">experience library</span></h2>
+              <p className="manage-subtitle">Add work, projects, and volunteering and then let AI match them to any job description.</p>
+            </aside>
+            <div className="manage-content">
+              <ExperienceManager authFetch={authFetch} apiUrl={API_URL} />
+            </div>
+          </div>
+        ) : (
           <>
-            <div className="input-section">
-              <h2>Step 1: Paste Qualifications</h2>
-              <textarea
-                placeholder="Paste the job description here..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                rows={8}
-              />
-              <button
-                onClick={searchExperiences}
-                disabled={searchLoading || !jobDescription.trim()}
-              >
-                {searchLoading ? 'Finding Matches...' : 'Find Matching Experiences'}
-              </button>
+            <div className="generate-layout">
+              <aside className="manage-sidebar">
+                <h2 className="manage-title">Paste job <span className="manage-highlight">qualifications</span></h2>
+                <p className="manage-subtitle">Paste the skills, requirements, or descriptions from any job posting to find your most relevant experiences.</p>
+              </aside>
+              <div className="manage-content">
+                <div className="input-section">
+                  <textarea
+                    placeholder="Paste the job description here..."
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={8}
+                  />
+                  <button
+                    onClick={searchExperiences}
+                    disabled={searchLoading || !jobDescription.trim()}
+                  >
+                    {searchLoading ? 'Finding Matches...' : 'Find Matching Experiences'}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {matchedExperiences.length > 0 && (
@@ -332,27 +378,13 @@ function MainApp() {
               </div>
             )}
           </>
-        ) : (
-          <ExperienceManager authFetch={authFetch} apiUrl={API_URL} />
         )}
       </div>
+      <footer className="app-footer">
+        <p>Built by UWaterloo students </p>
+      </footer>
     </div>
   );
-}
-
-function ServerGate({ children }) {
-  const { serverReady } = useServerStatus();
-
-  if (!serverReady) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Our server is waking up, this will take 15-20 seconds...</p>
-      </div>
-    );
-  }
-
-  return children;
 }
 
 function App() {
@@ -360,9 +392,7 @@ function App() {
     <ServerWarmup>
       <AuthProvider>
         <ProtectedRoute>
-          <ServerGate>
-            <MainApp />
-          </ServerGate>
+          <MainApp />
         </ProtectedRoute>
       </AuthProvider>
     </ServerWarmup>

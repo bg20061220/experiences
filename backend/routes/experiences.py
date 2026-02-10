@@ -1,15 +1,21 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from models import ProjectData, BatchExperienceRequest
 from database import get_db
 from utils.embeddings import get_embedding, get_embeddings_batch
 from dependencies.auth import get_current_user
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/api", tags=["experiences"])
 
 
 @router.post("/experiences")
+@limiter.limit("15/minute")
 def add_experience(
     project: ProjectData,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
     embedding = get_embedding(project.content)
@@ -36,15 +42,17 @@ def add_experience(
         return {"status": "success", "id": project.id}
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request")
     finally:
         cur.close()
         conn.close()
 
 
 @router.post("/experiences/batch")
+@limiter.limit("5/minute")
 def add_experiences_batch(
     request: BatchExperienceRequest,
+    request_obj: Request,
     user_id: str = Depends(get_current_user),
 ):
     if not request.experiences:
@@ -77,7 +85,7 @@ def add_experiences_batch(
         return {"status": "success", "count": len(request.experiences)}
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request")
     finally:
         cur.close()
         conn.close()
@@ -115,9 +123,11 @@ def get_all_experiences(user_id: str = Depends(get_current_user)):
 
 
 @router.put("/experiences/{experience_id}")
+@limiter.limit("15/minute")
 def update_experience(
     experience_id: str,
     project: ProjectData,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
     embedding = get_embedding(project.content)
@@ -152,15 +162,17 @@ def update_experience(
         raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request")
     finally:
         cur.close()
         conn.close()
 
 
 @router.delete("/experiences/{experience_id}")
+@limiter.limit("15/minute")
 def delete_experience(
     experience_id: str,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
     conn = get_db()

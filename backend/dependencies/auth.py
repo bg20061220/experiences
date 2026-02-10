@@ -63,7 +63,7 @@ def get_current_user(
             token,
             public_key,
             algorithms=["ES256"],
-            options={"verify_aud": False}
+            audience="authenticated",
         )
 
         user_id: str = payload.get("sub")
@@ -80,13 +80,13 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
         )
-    except JWTError as e:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}",
+            detail="Invalid token",
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication error: {str(e)}",
+            detail="Authentication failed",
         )

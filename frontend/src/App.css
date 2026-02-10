@@ -1,23 +1,23 @@
 /* Cool & Modern SaaS design */
 
 :root {
-  --primary: #7c3aed;
-  --primary-hover: #6d28d9;
-  --primary-light: #f5f3ff;
-  --secondary: #64748b;
-  --accent: #14b8a6;
-  --accent-hover: #0d9488;
-  --accent-light: #f0fdfa;
-  --success: #14b8a6;
-  --success-hover: #0d9488;
+  --primary: rgb(34, 138, 91);
+  --primary-hover: rgb(26, 110, 73);
+  --primary-light: rgb(232, 245, 239);
+  --secondary: rgb(67, 209, 145);
+  --accent: rgb(80, 227, 161);
+  --accent-hover: rgb(60, 200, 140);
+  --accent-light: rgb(232, 250, 242);
+  --success: rgb(34, 138, 91);
+  --success-hover: rgb(26, 110, 73);
   --danger: #ef4444;
   --danger-hover: #dc2626;
-  --background: #f8fafc;
+  --background: rgb(239, 242, 241);
   --surface: #ffffff;
-  --border: #e2e8f0;
+  --border: rgb(200, 215, 208);
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: rgb(165, 194, 181);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -30,65 +30,68 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   background: var(--background);
   color: var(--text-primary);
   line-height: 1.5;
   margin: 0;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
 .App {
   min-height: 100vh;
   background: var(--background);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header */
-.App-header {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  border-bottom: none;
+.app-footer {
+  margin-top: auto;
   padding: 1.5rem 2rem;
   text-align: center;
+  border-top: 1px solid var(--border);
 }
 
-.App-header h1 {
+.app-footer p {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: white;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
-.App-header p {
-  margin: 0.25rem 0 0 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.95rem;
-}
-
-.user-info {
+/* Top Bar */
+.top-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  justify-content: space-between;
+  padding: 0.75rem 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
-.user-info span {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
+.logo {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
 }
 
 .sign-out-btn {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 0.4rem 1rem;
   width: auto;
   margin: 0;
   font-size: 0.85rem;
 }
 
 .sign-out-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
+  background: var(--background);
+  color: var(--text-primary);
 }
 
 /* Tabs */
@@ -130,7 +133,7 @@ body {
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: linear-gradient(135deg, rgb(34, 138, 91), rgb(67, 209, 145));
   color: white;
   border-color: var(--primary);
 }
@@ -140,6 +143,55 @@ body {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+.container:has(.manage-layout),
+.container:has(.generate-layout) {
+  max-width: 1200px;
+}
+
+.generate-layout {
+  display: flex;
+  gap: 2.4rem;
+  align-items: flex-start;
+}
+
+.manage-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.manage-sidebar {
+  flex: 0 0 320px;
+  position: sticky;
+  top: 2rem;
+  padding: 2rem 1rem;
+}
+
+.manage-title {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.025em;
+}
+
+.manage-highlight {
+  color: var(--primary);
+}
+
+.manage-subtitle {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.manage-content {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Sections */
@@ -192,6 +244,7 @@ textarea::placeholder {
 
 /* Buttons */
 button {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   background: var(--primary);
   color: white;
   border: none;
@@ -411,6 +464,48 @@ button:disabled {
   background: none;
 }
 
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: white;
+  color: #3c4043;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.google-btn:hover {
+  background: #f7f8f8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.25rem 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-divider span {
+  padding: 0 0.75rem;
+}
+
 /* Loading */
 .loading-container {
   min-height: 100vh;
@@ -471,6 +566,7 @@ button:disabled {
 
 .experience-grid {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 

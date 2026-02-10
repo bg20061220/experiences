@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from models import SearchRequest
 from database import get_db
 from utils.embeddings import get_embedding
 from dependencies.auth import get_current_user
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/api", tags=["search"])
 
@@ -10,8 +14,10 @@ SIMILARITY_THRESHOLD = 0
 
 
 @router.post("/search")
+@limiter.limit("10/minute")
 def search_experiences(
     request: SearchRequest,
+    request_obj: Request,
     user_id: str = Depends(get_current_user),
 ):
     query_embedding = get_embedding(request.query, input_type="search_query")
