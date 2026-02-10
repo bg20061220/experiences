@@ -16,11 +16,11 @@ SIMILARITY_THRESHOLD = 0
 @router.post("/search")
 @limiter.limit("10/minute")
 def search_experiences(
-    request: SearchRequest,
-    request_obj: Request,
+    body: SearchRequest,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
-    query_embedding = get_embedding(request.query, input_type="search_query")
+    query_embedding = get_embedding(body.query, input_type="search_query")
 
     conn = get_db()
     cur = conn.cursor()

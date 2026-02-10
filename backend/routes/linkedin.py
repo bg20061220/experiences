@@ -14,17 +14,17 @@ router = APIRouter(prefix="/api", tags=["linkedin"])
 @router.post("/parse-linkedin")
 @limiter.limit("5/minute")
 def parse_linkedin(
-    request: LinkedInParseRequest,
-    request_obj: Request,
+    body: LinkedInParseRequest,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
     sections = []
-    if request.experiences_text and request.experiences_text.strip():
-        sections.append(f"=== WORK EXPERIENCE ===\n{request.experiences_text.strip()}")
-    if request.projects_text and request.projects_text.strip():
-        sections.append(f"=== PROJECTS ===\n{request.projects_text.strip()}")
-    if request.volunteering_text and request.volunteering_text.strip():
-        sections.append(f"=== VOLUNTEERING ===\n{request.volunteering_text.strip()}")
+    if body.experiences_text and body.experiences_text.strip():
+        sections.append(f"=== WORK EXPERIENCE ===\n{body.experiences_text.strip()}")
+    if body.projects_text and body.projects_text.strip():
+        sections.append(f"=== PROJECTS ===\n{body.projects_text.strip()}")
+    if body.volunteering_text and body.volunteering_text.strip():
+        sections.append(f"=== VOLUNTEERING ===\n{body.volunteering_text.strip()}")
 
     if not sections:
         raise HTTPException(status_code=400, detail="Please paste text in at least one section.")

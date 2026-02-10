@@ -51,21 +51,21 @@ def add_experience(
 @router.post("/experiences/batch")
 @limiter.limit("5/minute")
 def add_experiences_batch(
-    request: BatchExperienceRequest,
-    request_obj: Request,
+    body: BatchExperienceRequest,
+    request: Request,
     user_id: str = Depends(get_current_user),
 ):
-    if not request.experiences:
+    if not body.experiences:
         raise HTTPException(status_code=400, detail="No experiences provided")
 
-    texts = [exp.content for exp in request.experiences]
+    texts = [exp.content for exp in body.experiences]
     embeddings = get_embeddings_batch(texts)
 
     conn = get_db()
     cur = conn.cursor()
 
     try:
-        for exp, embedding in zip(request.experiences, embeddings):
+        for exp, embedding in zip(body.experiences, embeddings):
             cur.execute("""
             INSERT INTO experiences (id, user_id, type, title, date_range, skills, industry, tags, content, embedding)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -82,7 +82,7 @@ def add_experiences_batch(
                 embedding
             ))
         conn.commit()
-        return {"status": "success", "count": len(request.experiences)}
+        return {"status": "success", "count": len(body.experiences)}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while processing your request")
