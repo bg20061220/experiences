@@ -31,7 +31,7 @@ app.add_middleware(
     ],
     allow_origin_regex=r"https://resumetailorai-[a-z0-9]+-bhavya-goels-projects\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "HEAD"],
     allow_headers=["Content-Type", "Authorization"],
 )
 
