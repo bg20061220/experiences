@@ -1,47 +1,63 @@
 import os
-import cohere
+import requests
+from fastapi import HTTPException
 
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
-
-co = cohere.Client(COHERE_API_KEY) if COHERE_API_KEY else None
+COHERE_API_URL = "https://api.cohere.com/v2/embed"
 
 
 def get_embedding(text: str, input_type: str = "search_document") -> list:
-    """Generate embedding vector for the given text using Cohere API."""
-    if not co:
+    if not COHERE_API_KEY:
         raise RuntimeError("COHERE_API_KEY environment variable not set")
 
-    response = co.embed(
-        texts=[text],
-        model="embed-english-light-v3.0",
-        input_type=input_type,
-        embedding_types=["float"]
+    response = requests.post(
+        COHERE_API_URL,
+        headers={
+            "Authorization": f"Bearer {COHERE_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "texts": [text],
+            "model": "embed-english-light-v3.0",
+            "input_type": input_type,
+            "embedding_types": ["float"]
+        },
+        timeout=30
     )
 
-    embedding = response.embeddings.float[0]
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail=f"Cohere API error: {response.text}")
 
-    if len(embedding) != 384:
-        raise RuntimeError(f"Expected 384 dimensions, got {len(embedding)}")
-
-    return embedding
+    return response.json()["embeddings"]["float"][0]
 
 
 def get_embeddings_batch(texts: list, input_type: str = "search_document") -> list:
-    """Generate embedding vectors for multiple texts in a single Cohere API call."""
-    if not co:
+    if not COHERE_API_KEY:
         raise RuntimeError("COHERE_API_KEY environment variable not set")
 
-    response = co.embed(
-        texts=texts,
-        model="embed-english-light-v3.0",
-        input_type=input_type,
-        embedding_types=["float"]
+    response = requests.post(
+        COHERE_API_URL,
+        headers={
+            "Authorization": f"Bearer {COHERE_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "texts": texts,
+            "model": "embed-english-light-v3.0",
+            "input_type": input_type,
+            "embedding_types": ["float"]
+        },
+        timeout=30
     )
 
-    embeddings = response.embeddings.float
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail=f"Cohere API error: {response.text}")
+
+    embeddings = response.json()["embeddings"]["float"]
 
     for emb in embeddings:
         if len(emb) != 384:
             raise RuntimeError(f"Expected 384 dimensions, got {len(emb)}")
 
     return embeddings
+
